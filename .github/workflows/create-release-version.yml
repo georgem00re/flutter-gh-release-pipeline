@@ -42,6 +42,7 @@ jobs:
       - run: flutter build web --release --base-href "/${{ steps.get-repository-name.outputs.repository-name }}/"
       - run: cd build/web && zip -r ../../web-dist.zip .
       - run: flutter build apk --release
+      - run: flutter build appbundle --release
       - uses: actions/create-release@v1
         id: create-release
         env:
@@ -65,3 +66,11 @@ jobs:
           asset_path: flutter-app/build/app/outputs/flutter-apk/app-release.apk
           asset_name: app-release.apk
           asset_content_type: application/vnd.android.package-archive
+      - uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: flutter-app/build/app/outputs/bundle/release/app-release.aab
+          asset_name: app-release.aab
+          asset_content_type: application/octet-stream
