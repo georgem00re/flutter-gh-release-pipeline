@@ -1,0 +1,21 @@
+name: create-release-version-on-dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        required: true
+        type: string
+        description: The SHA of the commit to which the release tag will be attached.
+      release_version:
+        required: true
+        type: string
+        description: The release version (e.g. 1.2.3).
+jobs:
+  create-release-version:
+    name: Create Release Version
+    uses: ./.github/workflows/create-release-version.yml
+    with:
+      commit_sha: ${{ inputs.commit_sha }}
+      release_version: ${{ inputs.release_version }}
+    permissions:
+      contents: write
