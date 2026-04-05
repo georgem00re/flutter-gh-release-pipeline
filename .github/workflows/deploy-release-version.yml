@@ -1,0 +1,38 @@
+name: deploy-release-version
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "release_version"
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  upload-pages-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/read-release-version
+        id: read-release-version
+      - run: |
+          gh release download ${{ steps.read-release-version.outputs.release-version }} --pattern "web-dist.zip"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: unzip web-dist.zip
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web-dist/
+  deploy-pages-artifact:
+    needs: upload-pages-artifact
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy-to-gh-pages.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deploy-to-gh-pages
