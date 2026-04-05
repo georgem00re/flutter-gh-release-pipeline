@@ -1,0 +1,23 @@
+name: fail-if-release-version-exists
+description: Checks that the provided release version does not already exist.
+inputs:
+  release_version:
+    required: true
+    description: The release version (e.g. 1.2.3).
+  github_token:
+    required: true
+    description: The GitHub token for API calls
+runs:
+  using: "composite"
+  steps:
+    - name: Check if tag already exists
+      id: tag_exists
+      uses: mukunku/tag-exists-action@v1.6.0
+      with:
+        tag: ${{ format('v{0}', inputs.release_version) }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+    - name: Fail if tag already exists
+      if: ${{ steps.tag_exists.outputs.exists == 'true' }}
+      run: exit 1
+      shell: bash
