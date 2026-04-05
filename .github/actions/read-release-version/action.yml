@@ -1,0 +1,14 @@
+name: read-release-version
+description: Gets the release version stored in release_version.
+runs:
+  using: "composite"
+  steps:
+    - name: Get Release Version
+      id: read_release_version
+      shell: bash
+      run: |
+        echo "version=$(cat release_version)" >> $GITHUB_OUTPUT
+outputs:
+  release-version:
+    value: ${{ steps.read_release_version.outputs.version }}
+    description: The release version stored in release_version.
