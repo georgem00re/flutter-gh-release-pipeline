@@ -1,0 +1,58 @@
+name: create-release-version
+on:
+  workflow_call:
+    inputs:
+      commit_sha:
+        required: true
+        type: string
+      release_version:
+        required: true
+        type: string
+jobs:
+  create-release-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: flutter-app
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.commit_sha }}
+      - uses: ./.github/actions/validate-release-version
+        with:
+          release_version: ${{ inputs.release_version }}
+      - uses: ./.github/actions/fail-if-release-version-exists
+        with:
+          release_version: ${{ inputs.release_version }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: ./.github/actions/create-release-tag
+        id: create-release-tag
+        with:
+          commit_sha: ${{ inputs.commit_sha }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release_version: ${{ inputs.release_version }}
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - uses: ./.github/actions/get-repository-name
+        id: get-repository-name
+      - run: flutter build web --release --base-href "/${{ steps.get-repository-name.outputs.repository-name }}/"
+      - run: zip -r web-dist.zip build/web
+      - uses: actions/create-release@v1
+        id: create-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_name: release-${{ steps.create-release-tag.outputs.tag_name }}
+          tag_name: ${{ steps.create-release-tag.outputs.tag_name }}
+      - uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: flutter-app/web-dist.zip
+          asset_name: web-dist.zip
+          asset_content_type: application/zip
