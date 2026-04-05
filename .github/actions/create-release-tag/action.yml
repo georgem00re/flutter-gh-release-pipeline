@@ -1,0 +1,30 @@
+name: create-release-tag
+description: Creates a release tag and assigns it to a specific commit.
+inputs:
+  release_version:
+    required: true
+    description: The release version (e.g. 1.2.3).
+  github_token:
+    required: true
+    description: The GitHub token for API calls.
+  commit_sha:
+    required: true
+    description: The SHA of the commit to which the tag will be assigned.
+outputs:
+  tag_name:
+    description: "The name of the created tag"
+    value: ${{ steps.set-output.outputs.tag_name }}
+runs:
+  using: "composite"
+  steps:
+    - name: Create tag
+      uses: mathieudutour/github-tag-action@v6.2
+      with:
+        github_token: ${{ inputs.github_token }}
+        tag_prefix: "v"
+        custom_tag: ${{ inputs.release_version }}
+        commit_sha: ${{ inputs.commit_sha }}
+    - name: Set output
+      id: set-output
+      shell: bash
+      run: echo "tag_name=v${{ inputs.release_version }}" >> $GITHUB_OUTPUT
