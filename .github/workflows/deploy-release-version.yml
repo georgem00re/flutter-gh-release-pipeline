@@ -20,7 +20,7 @@ jobs:
           gh release download ${{ steps.read-release-version.outputs.release-version }} --pattern "web-dist.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: unzip web-dist.zip
+      - run: unzip web-dist.zip -d web-dist
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web-dist/
