@@ -40,7 +40,7 @@ jobs:
       - uses: ./.github/actions/get-repository-name
         id: get-repository-name
       - run: flutter build web --release --base-href "/${{ steps.get-repository-name.outputs.repository-name }}/"
-      - run: zip -r web-dist.zip build/web
+      - run: cd build/web && zip -r ../../web-dist.zip .
       - uses: actions/create-release@v1
         id: create-release
         env:
